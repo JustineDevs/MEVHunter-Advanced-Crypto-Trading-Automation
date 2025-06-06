@@ -11,15 +11,19 @@ interface ExtendedNextRequest extends NextRequest {
   };
 }
 
-// Create a new ratelimiter that allows 10 requests per 10 seconds
-const ratelimit = new Ratelimit({
-  redis: new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  }),
-  limiter: Ratelimit.slidingWindow(10, '10 s'),
-  analytics: true,
-})
+// Initialize rate limiter only if Redis credentials are available
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  ratelimit = new Ratelimit({
+    redis: new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    }),
+    limiter: Ratelimit.slidingWindow(10, '10 s'),
+    analytics: true,
+  });
+}
 
 // List of known bot user agents
 const BOT_USER_AGENTS = [
@@ -61,16 +65,23 @@ export async function middleware(request: ExtendedNextRequest) {
     return new NextResponse('Bot access denied', { status: 403 })
   }
 
-  // Rate limiting
-  const ip = request.ip ?? '127.0.0.1'
-  const { success, limit, reset, remaining } = await ratelimit.limit(ip)
-  
-  response.headers.set('X-RateLimit-Limit', limit.toString())
-  response.headers.set('X-RateLimit-Remaining', remaining.toString())
-  response.headers.set('X-RateLimit-Reset', reset.toString())
+  // Rate limiting (only if Redis is configured)
+  if (ratelimit) {
+    try {
+      const ip = request.ip ?? '127.0.0.1'
+      const { success, limit, reset, remaining } = await ratelimit.limit(ip)
+      
+      response.headers.set('X-RateLimit-Limit', limit.toString())
+      response.headers.set('X-RateLimit-Remaining', remaining.toString())
+      response.headers.set('X-RateLimit-Reset', reset.toString())
 
-  if (!success) {
-    return new NextResponse('Too Many Requests', { status: 429 })
+      if (!success) {
+        return new NextResponse('Too Many Requests', { status: 429 })
+      }
+    } catch (error) {
+      console.error('Rate limiting error:', error)
+      // Continue without rate limiting if there's an error
+    }
   }
 
   // Geo-blocking
