@@ -1,30 +1,57 @@
-# Crypto bot development
+# MEVHunter - Advanced Crypto Trading Automation
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+> **Note:** This project is not affiliated with v0.dev and is fully owned and maintained by [JustineDevs].
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/justinedevs-projects/v0-crypto-bot-development)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/vBX5PM3swRt)
+A modern, secure, and extensible crypto bot dashboard and automation suite. Built for DeFi, arbitrage, alerts, and advanced blockchain monitoring.
+
+## Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/) (App Router, Middleware, PWA)
+- **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), custom CSS modules
+- **State & Forms:** React Hooks, [react-hook-form](https://react-hook-form.com/), [zod](https://zod.dev/)
+- **Wallets:** [ethers.js](https://docs.ethers.org/), [@solana/web3.js](https://solana-labs.github.io/solana-web3.js/), MetaMask, Phantom
+- **Security:** Upstash Redis (rate limiting), CSRF protection, bot detection, geo-blocking, input validation/sanitization
+- **PWA:** Service Worker, manifest, offline support, push notifications
+- **Other:** [Lucide Icons](https://lucide.dev/), [date-fns](https://date-fns.org/), [recharts](https://recharts.org/), [clsx](https://github.com/lukeed/clsx)
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+This repository is fully owned and maintained by [JustineDevs].
 
-## Deployment
+## Features
+- Real-time DeFi and blockchain monitoring
+- Arbitrage and liquidation opportunity detection
+- Alerts for price, gas, and protocol events
+- Wallet integration (ETH/Solana)
+- Modern, responsive UI/UX (mobile-first, PWA support)
+- Security and audit tools (rate limiting, CSRF, bot detection, geo-blocking, input validation)
+- Service worker for offline support and push notifications
+- Upstash Redis-powered rate limiting
 
-Your project is live at:
+## Getting Started
 
-**[https://vercel.com/justinedevs-projects/v0-crypto-bot-development](https://vercel.com/justinedevs-projects/v0-crypto-bot-development)**
+1. Clone the repository
+2. Install dependencies: `pnpm install`
+3. Create a `.env.local` file in the project root with your Upstash Redis credentials:
+   ```
+   UPSTASH_REDIS_REST_URL="<your_upstash_redis_rest_url>"
+   UPSTASH_REDIS_REST_TOKEN="<your_upstash_redis_rest_token>"
+   ```
+4. Start the dev server: `pnpm dev`
+5. Open [http://localhost:3000](http://localhost:3000) (or the port shown in your terminal)
 
-## Build your app
+## Security & PWA
+- Implements rate limiting, bot detection, geo-blocking, and CSRF protection in middleware
+- Uses Upstash Redis for distributed rate limiting
+- Service worker for offline support, caching, and push notifications
+- PWA manifest and icons included
 
-Continue building your app on:
+## Contributing
+Pull requests and issues are welcome! Please open an issue to discuss your ideas or report bugs.
 
-**[https://v0.dev/chat/projects/vBX5PM3swRt](https://v0.dev/chat/projects/vBX5PM3swRt)**
+## Support
+For questions or support, please open an issue in this repository.
 
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## License
+MIT

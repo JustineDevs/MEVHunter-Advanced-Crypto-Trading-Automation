@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TrendingUp, BarChart3, Target } from "lucide-react"
+import { TradingViewWidget } from "@/components/TradingViewWidget"
+import { MarketGasCard } from "@/components/ui/market-gas-card"
 
 interface TradingSignal {
   id: string
@@ -124,6 +126,18 @@ export function TradingSignals() {
 
   return (
     <div className="space-y-6">
+      {/* Live Chart Card */}
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white">Live Market Chart</CardTitle>
+          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
+        </CardContent>
+      </Card>
+      {/* Gas Price Card */}
+      <MarketGasCard />
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-slate-800/50 border-slate-700">

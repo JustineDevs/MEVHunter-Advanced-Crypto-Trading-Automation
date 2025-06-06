@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Play, Pause, Settings, Activity, TrendingUp, AlertTriangle } from "lucide-react"
+import { TradingViewWidget } from "@/components/TradingViewWidget"
+import { MarketGasCard } from "@/components/ui/market-gas-card"
+import { MarketUniswapCard } from "@/components/ui/market-uniswap-card"
+import { MarketAaveCard } from "@/components/ui/market-aave-card"
 
 interface BotDashboardProps {
   isConnected: boolean
@@ -98,15 +102,31 @@ export function BotDashboard({ isConnected }: BotDashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Live Chart Card */}
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white">Live Market Chart</CardTitle>
+          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
+        </CardContent>
+      </Card>
+      {/* Market Data Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MarketGasCard />
+        <MarketUniswapCard />
+        <MarketAaveCard />
+      </div>
       {/* Strategy Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {strategies.map((strategy) => (
           <Card key={strategy.id} className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
+            <CardHeader className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white text-lg">{strategy.name}</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardTitle className="text-white text-base">{strategy.name}</CardTitle>
+                  <CardDescription className="text-slate-400 text-xs">
                     {strategy.trades} trades • {strategy.successRate}% success rate
                   </CardDescription>
                 </div>
@@ -120,37 +140,37 @@ export function BotDashboard({ isConnected }: BotDashboardProps) {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-4 pt-0">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-300">Profit/Loss</span>
-                  <span className={`font-bold ${strategy.profit >= 0 ? "text-green-400" : "text-red-400"}`}>
+                  <span className="text-slate-300 text-sm">Profit/Loss</span>
+                  <span className={`font-bold ${strategy.profit >= 0 ? "text-green-400" : "text-red-400"} text-sm`}>
                     ${strategy.profit.toFixed(2)}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-300">Risk Level</span>
-                  <span className={`font-medium ${getRiskColor(strategy.riskLevel)}`}>
+                  <span className="text-slate-300 text-sm">Risk Level</span>
+                  <span className={`font-medium ${getRiskColor(strategy.riskLevel)} text-sm`}>
                     {strategy.riskLevel.toUpperCase()}
                   </span>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
                     <span className="text-slate-400">Success Rate</span>
                     <span className="text-slate-300">{strategy.successRate}%</span>
                   </div>
-                  <Progress value={strategy.successRate} className="h-2 bg-slate-700" />
+                  <Progress value={strategy.successRate} className="h-1.5 bg-slate-700" />
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
-                    <Settings className="w-4 h-4 mr-1" />
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 h-8 text-xs">
+                    <Settings className="w-3 h-3 mr-1" />
                     Configure
                   </Button>
-                  <Button size="sm" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
-                    <Activity className="w-4 h-4 mr-1" />
+                  <Button size="sm" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 h-8 text-xs">
+                    <Activity className="w-3 h-3 mr-1" />
                     Logs
                   </Button>
                 </div>

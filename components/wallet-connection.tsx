@@ -5,10 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Wallet, CheckCircle } from "lucide-react"
+import { Connection, PublicKey } from "@solana/web3.js"
 
 interface WalletConnectionProps {
   onConnectionChange: (connected: boolean) => void
   isConnected: boolean
+}
+
+declare global {
+  interface Window {
+    ethereum?: any;
+    solana?: any;
+    solanaWeb3?: any;
+  }
 }
 
 export function WalletConnection({ onConnectionChange, isConnected }: WalletConnectionProps) {
@@ -51,9 +60,9 @@ export function WalletConnection({ onConnectionChange, isConnected }: WalletConn
         setWalletType("phantom")
         onConnectionChange(true)
 
-        // Get SOL balance
-        const connection = new window.solanaWeb3.Connection("https://api.mainnet-beta.solana.com")
-        const balance = await connection.getBalance(response.publicKey)
+        // Get SOL balance using @solana/web3.js
+        const connection = new Connection("https://api.mainnet-beta.solana.com")
+        const balance = await connection.getBalance(new PublicKey(response.publicKey))
         setBalance(balance / 1e9)
       } else {
         alert("Phantom wallet not detected. Please install Phantom.")
@@ -63,11 +72,28 @@ export function WalletConnection({ onConnectionChange, isConnected }: WalletConn
     }
   }
 
-  const disconnect = () => {
+  const disconnect = async () => {
     setWalletAddress("")
     setWalletType(null)
     setBalance(0)
     onConnectionChange(false)
+
+    // For MetaMask: clear state, but cannot force disconnect in MetaMask UI
+    if (window.ethereum && window.ethereum.selectedAddress) {
+      // No programmatic disconnect available
+    }
+
+    // For Phantom: call disconnect if available
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        await window.solana.disconnect()
+      } catch (e) {
+        // Ignore errors if already disconnected
+      }
+    }
+
+    // Optionally: clear any session tokens/cookies here
+    document.cookie = "session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
   }
 
   return (
@@ -75,13 +101,19 @@ export function WalletConnection({ onConnectionChange, isConnected }: WalletConn
       <CardContent className="p-4">
         {!isConnected ? (
           <div className="flex gap-2">
-            <Button onClick={connectMetaMask} className="bg-orange-600 hover:bg-orange-700">
-              <Wallet className="w-4 h-4 mr-2" />
-              MetaMask
+            <Button onClick={connectMetaMask} className="bg-black/40 backdrop-blur-md hover:bg-black/60 border border-orange-500/30 transition-all duration-200">
+              <img
+                src="/metamask.svg"
+                alt="MetaMask Logo"
+                className="w-8 h-8 mr-2 rounded-full"
+              />
             </Button>
-            <Button onClick={connectPhantom} className="bg-purple-600 hover:bg-purple-700">
-              <Wallet className="w-4 h-4 mr-2" />
-              Phantom
+            <Button onClick={connectPhantom} className="bg-black/40 backdrop-blur-md hover:bg-black/60 border border-purple-500/30 transition-all duration-200">
+              <img
+                src="/phantom.svg"
+                alt="Phantom Logo"
+                className="w-8 h-8 mr-2 rounded-full"
+              />
             </Button>
           </div>
         ) : (

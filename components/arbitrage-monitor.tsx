@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowRight, TrendingUp, RefreshCw, Zap } from "lucide-react"
+import { TradingViewWidget } from "@/components/TradingViewWidget"
 
 interface ArbitrageOpportunity {
   id: string
@@ -100,6 +101,16 @@ export function ArbitrageMonitor() {
 
   return (
     <div className="space-y-6">
+      {/* Live Chart Card */}
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white">Live Market Chart</CardTitle>
+          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
+        </CardContent>
+      </Card>
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-slate-800/50 border-slate-700">
@@ -190,14 +201,19 @@ export function ArbitrageMonitor() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      onClick={() => executeArbitrage(opp)}
-                      disabled={opp.profitEstimate < 10}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Execute
-                    </Button>
+                    <div className="flex justify-end items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => executeArbitrage(opp)}
+                        disabled={opp.profitEstimate < 10}
+                        className="modern-animated-btn inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border bg-background hover:text-accent-foreground h-9 rounded-md px-3 border-slate-600 text-slate-300 hover:bg-slate-700"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap w-4 h-4 mr-1 animated-icon">
+                          <polygon points="13 2 13 13 22 13 22 2 13 2" />
+                        </svg>
+                        Execute
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
