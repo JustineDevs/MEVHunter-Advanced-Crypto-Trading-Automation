@@ -1,57 +1,227 @@
 # MEVHunter - Advanced Crypto Trading Automation
 
-> **Note:** This project is not affiliated with v0.dev and is fully owned and maintained by [JustineDevs].
+> **Prototype Notice:** This is a prototype application. Expect only basic functionality; other buttons and features are not yet fully implemented.
+> 
+> **Built by [JustineDevs]**
+> 
+> **Note:** This project is not affiliated with any project and is fully owned and maintained by [JustineDevs].
 
-A modern, secure, and extensible crypto bot dashboard and automation suite. Built for DeFi, arbitrage, alerts, and advanced blockchain monitoring.
+## Mission & Vision
 
-## Tech Stack
+### Mission
+To empower crypto traders with cutting-edge automation tools for real-time DeFi monitoring, arbitrage detection, and secure wallet integration, making advanced trading accessible to all.
 
-- **Framework:** [Next.js](https://nextjs.org/) (App Router, Middleware, PWA)
-- **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), custom CSS modules
-- **State & Forms:** React Hooks, [react-hook-form](https://react-hook-form.com/), [zod](https://zod.dev/)
-- **Wallets:** [ethers.js](https://docs.ethers.org/), [@solana/web3.js](https://solana-labs.github.io/solana-web3.js/), MetaMask, Phantom
-- **Security:** Upstash Redis (rate limiting), CSRF protection, bot detection, geo-blocking, input validation/sanitization
-- **PWA:** Service Worker, manifest, offline support, push notifications
-- **Other:** [Lucide Icons](https://lucide.dev/), [date-fns](https://date-fns.org/), [recharts](https://recharts.org/), [clsx](https://github.com/lukeed/clsx)
+### Vision
+To build a robust, secure, and scalable platform that redefines crypto trading automation by leveraging blockchain technology, modern web frameworks, and a user-centric design.
 
 ## Overview
 
-This repository is fully owned and maintained by [JustineDevs].
+MEVHunter is an advanced crypto trading automation platform designed for real-time DeFi and blockchain monitoring. It provides tools for detecting arbitrage and liquidation opportunities, integrating with Ethereum and Solana wallets, and ensuring top-tier security with features like rate limiting, CSRF protection, and bot detection. Built as a Progressive Web App (PWA), MEVHunter offers a modern, responsive, and mobile-first user experience with offline support and push notifications.
 
-## Features
-- Real-time DeFi and blockchain monitoring
-- Arbitrage and liquidation opportunity detection
-- Alerts for price, gas, and protocol events
-- Wallet integration (ETH/Solana)
-- Modern, responsive UI/UX (mobile-first, PWA support)
-- Security and audit tools (rate limiting, CSRF, bot detection, geo-blocking, input validation)
-- Service worker for offline support and push notifications
-- Upstash Redis-powered rate limiting
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| Real-time Monitoring | Tracks DeFi protocols and blockchain events in real time |
+| Arbitrage Detection | Identifies profitable arbitrage opportunities across exchanges |
+| Liquidation Alerts | Monitors and alerts users to liquidation opportunities |
+| Wallet Integration | Supports Ethereum (MetaMask) and Solana (Phantom) wallets |
+| Responsive UI/UX | Mobile-first design with PWA support for seamless cross-device usage |
+| Security | Implements rate limiting, CSRF protection, bot detection, geo-blocking, and input validation |
+| Offline Support | Service Worker enables offline functionality and caching |
+| Push Notifications | Real-time alerts for price changes, gas fees, and protocol events |
+
+## Planned Features
+
+The following features are planned to enhance MEVHunter's functionality:
+
+- **Advanced Analytics Dashboard**: Visualize trading metrics and historical data with interactive charts
+- **Multi-Chain Support**: Extend wallet and protocol integrations to additional blockchains
+- **Automated Trading Bots**: Enable configurable trading strategies for arbitrage and liquidations
+- **AI-Powered Insights**: Leverage machine learning for predictive market analysis
+- **Custom Alert Configurations**: Allow users to set custom thresholds for alerts
+- **Decentralized Identity**: Integrate with Web3 authentication providers
+- **API Access**: Provide a public API for developers
+
+## Project Structure
+
+```
+MEVHunter-Advanced-Crypto-Trading-Automation/
+├── app/                    # Next.js App Router pages and layouts
+├── components/             # Reusable React components
+│   ├── ui/                # Shared UI components
+│   └── blockchain/        # Blockchain-specific components
+├── lib/                    # Utility functions and helpers
+├── middleware/             # Next.js middleware for security
+├── public/                 # Static assets
+├── styles/                 # Global and module-specific CSS
+├── types/                  # TypeScript type definitions
+├── hooks/                  # Custom React hooks
+├── services/               # API and blockchain service integrations
+├── .env.local             # Environment variables (not tracked)
+├── next.config.mjs        # Next.js configuration
+├── tsconfig.json          # TypeScript configuration
+├── tailwind.config.js     # Tailwind CSS configuration
+├── package.json           # Project metadata and dependencies
+└── README.md              # Project documentation
+```
+
+## Tech Stack
+
+| Category | Technologies |
+|----------|--------------|
+| Framework | Next.js (App Router, Middleware, PWA) |
+| Frontend | React, TypeScript |
+| Styling | Tailwind CSS, Radix UI, Custom CSS Modules |
+| State & Forms | React Hooks, react-hook-form, zod |
+| Wallets | ethers.js, @solana/web3.js, MetaMask, Phantom |
+| Security | Upstash Redis, CSRF protection, bot detection, geo-blocking |
+| PWA | Service Worker, manifest, offline support, push notifications |
+| Other | Lucide Icons, date-fns, recharts, clsx |
+
+## Dependencies
+
+### Core Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| next | ^14.0.0 | Next.js framework for SSR, SSG, and API routes |
+| react | ^18.2.0 | React library for building UI |
+| react-dom | ^18.2.0 | React DOM for rendering |
+| typescript | ^5.0.0 | TypeScript for type-safe JavaScript |
+| @types/node | ^20.0.0 | Type definitions for Node.js |
+| @types/react | ^18.2.0 | Type definitions for React |
+| @types/react-dom | ^18.2.0 | Type definitions for React DOM |
+
+### UI & Styling
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| tailwindcss | ^3.3.0 | Utility-first CSS framework |
+| @radix-ui/react-dialog | ^1.0.0 | Accessible dialog components |
+| @radix-ui/react-dropdown-menu | ^2.0.0 | Dropdown menu components |
+| @radix-ui/react-slot | ^1.0.0 | Slot components for composition |
+| class-variance-authority | ^0.7.0 | Dynamic class management |
+| clsx | ^2.0.0 | Utility for constructing className strings |
+| lucide-react | ^0.294.0 | Icon library |
+| tailwind-merge | ^2.0.0 | Merging Tailwind classes |
+
+### Blockchain & Web3
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| ethers | ^6.7.0 | Ethereum blockchain interactions |
+| @solana/web3.js | ^1.87.0 | Solana blockchain interactions |
+| @metamask/detect-provider | ^2.0.0 | MetaMask wallet detection |
+
+### Forms & Validation
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| react-hook-form | ^7.45.0 | Form management and validation |
+| zod | ^3.22.0 | Schema validation |
+| @hookform/resolvers | ^3.3.0 | Resolver for react-hook-form with zod |
+
+### Data Visualization & Utilities
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| recharts | ^2.9.0 | Charting library for data visualization |
+| date-fns | ^2.30.0 | Date manipulation utilities |
+| axios | ^1.6.0 | HTTP client for API requests |
+
+### Development Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| autoprefixer | ^10.4.0 | PostCSS plugin for vendor prefixes |
+| postcss | ^8.4.0 | CSS post-processing |
+| prettier | ^3.0.0 | Code formatter |
+| prettier-plugin-tailwindcss | ^0.5.0 | Tailwind CSS support for Prettier |
+| eslint | ^8.0.0 | Linting for JavaScript/TypeScript |
+| eslint-config-next | ^14.0.0 | ESLint configuration for Next.js |
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies: `pnpm install`
-3. Create a `.env.local` file in the project root with your Upstash Redis credentials:
+### Prerequisites
+- Node.js (v18 or higher)
+- pnpm (v8 or higher)
+- Git
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/JustineDevs/MEVHunter-Advanced-Crypto-Trading-Automation.git
+   cd MEVHunter-Advanced-Crypto-Trading-Automation
    ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Create a `.env.local` file in the project root with your credentials:
+   ```
+   # Upstash Redis
    UPSTASH_REDIS_REST_URL="<your_upstash_redis_rest_url>"
    UPSTASH_REDIS_REST_TOKEN="<your_upstash_redis_rest_token>"
    ```
-4. Start the dev server: `pnpm dev`
-5. Open [http://localhost:3000](http://localhost:3000) (or the port shown in your terminal)
+
+4. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Security & PWA
-- Implements rate limiting, bot detection, geo-blocking, and CSRF protection in middleware
-- Uses Upstash Redis for distributed rate limiting
-- Service worker for offline support, caching, and push notifications
-- PWA manifest and icons included
+
+### Security Features
+- Rate limiting via Upstash Redis for distributed request control
+- Middleware-based CSRF protection, bot detection, and geo-blocking
+- Input validation and sanitization using zod for secure form handling
+
+### Progressive Web App (PWA)
+- Service Worker for offline support and caching
+- PWA manifest and icons for app-like installation and experience
+- Push notifications for real-time alerts
 
 ## Contributing
-Pull requests and issues are welcome! Please open an issue to discuss your ideas or report bugs.
+
+We welcome contributions to MEVHunter! To contribute:
+
+1. Fork the Repository:
+   ```bash
+   git clone https://github.com/JustineDevs/MEVHunter-Advanced-Crypto-Trading-Automation.git
+   ```
+
+2. Create a Branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. Make Changes:
+   - Follow the coding style (Prettier, ESLint)
+   - Ensure tests pass (if applicable)
+
+4. Submit a Pull Request:
+   - Push your branch: `git push origin feature/your-feature-name`
+   - Open a pull request with a clear description of your changes
+   - Reference any related issues
+
+5. Report Bugs:
+   - Open an issue with a detailed description of the bug
+   - Include steps to reproduce
 
 ## Support
-For questions or support, please open an issue in this repository.
+
+For questions, bug reports, or feature requests, please open an issue in this repository.
 
 ## License
-MIT
+
+This project is licensed under the MIT License.
+
+---
+
+**Built by [JustineDevs] | 2025**
