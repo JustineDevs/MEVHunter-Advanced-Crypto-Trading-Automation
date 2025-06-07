@@ -7,7 +7,32 @@ const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
 const solProvider = new Connection(process.env.SOLANA_RPC_URL || "");
 
 export async function POST(request: Request) {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+
+  let redis = null;
+  if (isValidRedis) {
+    // Dynamically import Redis only if valid
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
   try {
+    // Rate limit only if Redis is available
+    if (redis) {
+      const rateLimitKey = `arbitrage:execute:ratelimit`;
+      const requestCount = await redis.incr(rateLimitKey);
+      if (requestCount === 1) {
+        await redis.expire(rateLimitKey, 60); // Reset after 1 minute
+      }
+      if (requestCount > 10) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded" },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await request.json();
     const { opportunity, walletAddress, walletType } = body;
 
@@ -18,30 +43,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Always return a mock response (no Redis logic)
-    return NextResponse.json({
-      success: true,
-      message: "Demo mode: trade executed (no Redis)",
-      opportunity,
-      walletAddress,
-      walletType,
-      txHash: "0xDEMO1234567890",
-      status: "success"
-    });
+    // If Redis is not available, return a mock response for demo
+    if (!redis) {
+      return NextResponse.json({
+        success: true,
+        message: "Demo mode: trade executed (no Redis)",
+        opportunity,
+        walletAddress,
+        walletType,
+        txHash: "0xDEMO1234567890",
+        status: "success"
+      });
+    }
 
-    // If you want to keep the trade execution logic, you can add it here
-    // let result;
-    // if (walletType === "metamask") {
-    //   result = await executeEthereumTrade(opportunity, walletAddress);
-    // } else if (walletType === "phantom") {
-    //   result = await executeSolanaTrade(opportunity, walletAddress);
-    // } else {
-    //   return NextResponse.json(
-    //     { error: "Unsupported wallet type" },
-    //     { status: 400 }
-    //   );
-    // }
-    // return NextResponse.json(result);
+    // Execute trade based on wallet type
+    let result;
+    if (walletType === "metamask") {
+      result = await executeEthereumTrade(opportunity, walletAddress);
+    } else if (walletType === "phantom") {
+      result = await executeSolanaTrade(opportunity, walletAddress);
+    } else {
+      return NextResponse.json(
+        { error: "Unsupported wallet type" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error executing trade:", error);
     return NextResponse.json(
