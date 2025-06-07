@@ -277,15 +277,15 @@ Below are the latest UI design mockups for MEVHunter:
 
 | Dashboard | Arbitrage | Liquidation |
 |-----------|-----------|------------|
-| ![Dashboard](/ui-design/Dashboard.png) | ![Arbitrage](/ui-design/Arbitrage.png) | ![Liquidation](/ui-design/Liquidation.png) |
+| ![Dashboard](/ui-design/dashboard.png) | ![Arbitrage](/ui-design/arbitrage.png) | ![Liquidation](/ui-design/liquidation.png) |
 
 | Gas Optimization | NFT Monitor | Trading |
 |------------------|------------|---------|
-| ![Gas Optimization](/ui-design/Gas%20Optimization.png) | ![NFT Monitor](/ui-design/NFT%20Monitor.png) | ![Trading](/ui-design/Trading.png) |
+| ![Gas Optimization](/ui-design/gas-optimization.png) | ![NFT Monitor](/ui-design/nft-monitor.png) | ![Trading](/ui-design/trading.png) |
 
 | Security | Explorer |
 |----------|----------|
-| ![Security](/ui-design/Security.png) | ![Explorer](/ui-design/Explorer.png) |
+| ![Security](/ui-design/security.png) | ![Explorer](/ui-design/explorer.png) |
 
 ---
 
