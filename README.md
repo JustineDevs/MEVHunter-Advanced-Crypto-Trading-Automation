@@ -271,6 +271,22 @@ pnpm add @upstash/ratelimit @upstash/redis
 
 The `UI Design` folder contains design mockups and assets for the MEVHunter platform. To view these designs in the app, visit the `/ui-design` page (to be implemented) or open the images directly from the `UI Design` directory.
 
+### UI Design Gallery
+
+Below are the latest UI design mockups for MEVHunter:
+
+| Dashboard | Arbitrage | Liquidation |
+|-----------|-----------|------------|
+| ![Dashboard](public/ui-design/Dashboard.png) | ![Arbitrage](public/ui-design/Arbitrage.png) | ![Liquidation](public/ui-design/Liquidation.png) |
+
+| Gas Optimization | NFT Monitor | Trading |
+|------------------|------------|---------|
+| ![Gas Optimization](public/ui-design/Gas%20Optimization.png) | ![NFT Monitor](public/ui-design/NFT%20Monitor.png) | ![Trading](public/ui-design/Trading.png) |
+
+| Security | Explorer |
+|----------|----------|
+| ![Security](public/ui-design/Security.png) | ![Explorer](public/ui-design/Explorer.png) |
+
 ---
 
 **Built by [JustineDevs] | 2025**
