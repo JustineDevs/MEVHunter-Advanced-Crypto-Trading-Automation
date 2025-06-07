@@ -273,19 +273,19 @@ The `UI Design` folder contains design mockups and assets for the MEVHunter plat
 
 ### UI Design Gallery
 
-Below are the latest UI design mockups for MEVHunter (click any image to zoom):
+Below are the latest UI design mockups for MEVHunter:
 
 | Dashboard | Arbitrage | Liquidation |
 |-----------|-----------|------------|
-| [<img src="https://github.com/user-attachments/assets/bc9fdb07-c3fa-436e-b717-0d523e8354ac" width="200"/>](https://github.com/user-attachments/assets/bc9fdb07-c3fa-436e-b717-0d523e8354ac) | [<img src="https://github.com/user-attachments/assets/6ceedc31-c728-40dd-88f1-6e9b531cc24e" width="200"/>](https://github.com/user-attachments/assets/6ceedc31-c728-40dd-88f1-6e9b531cc24e) | [<img src="https://github.com/user-attachments/assets/2e54c7b5-e666-4034-9586-3bd79b6d4e69" width="200"/>](https://github.com/user-attachments/assets/2e54c7b5-e666-4034-9586-3bd79b6d4e69) |
+| ![Dashboard](/ui-design/dashboard.png) | ![Arbitrage](/ui-design/arbitrage.png) | ![Liquidation](/ui-design/liquidation.png) |
 
 | Gas Optimization | NFT Monitor | Trading |
-|------------------|-------------|---------|
-| [<img src="https://github.com/user-attachments/assets/2563df6c-b1f8-47d3-a9cf-72cfd77d3f98" width="200"/>](https://github.com/user-attachments/assets/2563df6c-b1f8-47d3-a9cf-72cfd77d3f98) | [<img src="https://github.com/user-attachments/assets/69cee863-0ef1-4921-b3cd-545afd946353" width="200"/>](https://github.com/user-attachments/assets/69cee863-0ef1-4921-b3cd-545afd946353) | [<img src="https://github.com/user-attachments/assets/edd5e65e-e7a8-427c-a36c-14ec1922e917" width="200"/>](https://github.com/user-attachments/assets/edd5e65e-e7a8-427c-a36c-14ec1922e917) |
+|------------------|------------|---------|
+| ![Gas Optimization](/ui-design/gas-optimization.png) | ![NFT Monitor](/ui-design/nft-monitor.png) | ![Trading](/ui-design/trading.png) |
 
 | Security | Explorer |
 |----------|----------|
-| [<img src="https://github.com/user-attachments/assets/95c3f958-0d11-4fd5-a05b-611adf64d88c" width="200"/>](https://github.com/user-attachments/assets/95c3f958-0d11-4fd5-a05b-611adf64d88c) | [<img src="https://github.com/user-attachments/assets/e9f05a00-a126-47a3-8cb3-f3d3b533e994" width="200"/>](https://github.com/user-attachments/assets/e9f05a00-a126-47a3-8cb3-f3d3b533e994) |
+| ![Security](/ui-design/security.png) | ![Explorer](/ui-design/explorer.png) |
 
 ---
 
