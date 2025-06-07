@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Redis } from "@upstash/redis";
-
-// Initialize Redis client for rate limiting
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
-const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
-const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -17,6 +10,15 @@ const solProvider = new Connection(process.env.SOLANA_RPC_URL || "");
 const CACHE_DURATION = 60;
 
 export async function GET() {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+  let redis = null;
+  if (isValidRedis) {
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+
   try {
     // Check rate limit only if Redis is available
     if (redis) {

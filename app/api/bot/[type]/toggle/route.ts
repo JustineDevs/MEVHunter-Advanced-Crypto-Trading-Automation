@@ -1,10 +1,4 @@
 import { NextResponse } from "next/server";
-import { Redis } from '@upstash/redis';
-
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
-const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
-const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 export async function POST(
   request: Request,
@@ -21,6 +15,15 @@ export async function POST(
         { error: 'Invalid bot type' },
         { status: 400 }
       );
+    }
+
+    const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+    const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+    const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+    let redis = null;
+    if (isValidRedis) {
+      const { Redis } = await import("@upstash/redis");
+      redis = new Redis({ url: redisUrl, token: redisToken });
     }
 
     // Update bot status in Redis if available

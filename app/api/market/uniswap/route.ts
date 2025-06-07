@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { ethers } from "ethers";
-import { Redis } from '@upstash/redis';
 
 const UNISWAP_V3_POOL_ABI = [
   "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
@@ -9,21 +8,24 @@ const UNISWAP_V3_POOL_ABI = [
   "function token1() view returns (address)"
 ];
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
-
 const CACHE_TTL = 60; // Cache for 60 seconds
 
 export async function GET(request: Request) {
   const pool = new URL(request.url).searchParams.get("pool");
   if (!pool) return NextResponse.json({ error: "Missing pool address" }, { status: 400 });
 
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+  let redis = null;
+  if (isValidRedis) {
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+
   try {
     // Try to get cached data
-    const cachedData = await redis.get(`uniswap:pool:${pool}`);
+    const cachedData = await redis?.get(`uniswap:pool:${pool}`);
     if (cachedData) {
       return NextResponse.json(cachedData);
     }
@@ -52,7 +54,7 @@ export async function GET(request: Request) {
     };
 
     // Cache the data
-    await redis.set(`uniswap:pool:${pool}`, data, { ex: CACHE_TTL });
+    await redis?.set(`uniswap:pool:${pool}`, data, { ex: CACHE_TTL });
 
     return NextResponse.json(data);
   } catch (e) {

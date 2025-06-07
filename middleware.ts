@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 
 // Define the geo type
 type GeoInfo = {
@@ -15,21 +13,6 @@ type ExtendedNextRequest = NextRequest & {
   ip?: string;
   geo: GeoInfo;
   };
-
-// Initialize rate limiter only if Redis credentials are available
-let ratelimit: Ratelimit | null = null;
-
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    }),
-    limiter: Ratelimit.slidingWindow(20, '10 s'), // Increased limit for better UX
-    analytics: true,
-    prefix: 'ratelimit:mevhunter', // Added prefix for better organization
-  });
-}
 
 // List of known bot user agents
 const BOT_USER_AGENTS = [
@@ -106,6 +89,21 @@ export async function middleware(request: ExtendedNextRequest) {
         'X-Bot-Detected': 'true'
       }
     })
+  }
+
+  let ratelimit = null;
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    const { Ratelimit } = await import('@upstash/ratelimit');
+    const { Redis } = await import('@upstash/redis');
+    ratelimit = new Ratelimit({
+      redis: new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      }),
+      limiter: Ratelimit.slidingWindow(20, '10 s'),
+      analytics: true,
+      prefix: 'ratelimit:mevhunter',
+    });
   }
 
   // Rate limiting with improved error handling

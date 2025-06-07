@@ -1,12 +1,5 @@
 import { ethers } from 'ethers';
 import { Connection } from '@solana/web3.js';
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 // Bot status types
 export type BotStatus = 'running' | 'paused' | 'error';
@@ -63,7 +56,7 @@ export const defaultBotConfigs: Record<BotType, BotConfig> = {
 // Bot management functions
 export async function startAllBots() {
   try {
-    const configs = await redis.get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
+    const configs = await getRedis().get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
     
     for (const [type, config] of Object.entries(configs)) {
       config.status = 'running';
@@ -71,7 +64,7 @@ export async function startAllBots() {
       await startBot(type as BotType, config);
     }
     
-    await redis.set('bots:config', configs);
+    await getRedis().set('bots:config', configs);
     return { success: true, message: 'All bots started successfully' };
   } catch (error) {
     console.error('Error starting bots:', error);
@@ -81,7 +74,7 @@ export async function startAllBots() {
 
 export async function pauseAllBots() {
   try {
-    const configs = await redis.get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
+    const configs = await getRedis().get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
     
     for (const [type, config] of Object.entries(configs)) {
       config.status = 'paused';
@@ -89,7 +82,7 @@ export async function pauseAllBots() {
       await pauseBot(type as BotType);
     }
     
-    await redis.set('bots:config', configs);
+    await getRedis().set('bots:config', configs);
     return { success: true, message: 'All bots paused successfully' };
   } catch (error) {
     console.error('Error pausing bots:', error);
@@ -163,16 +156,16 @@ async function logBotEvent(type: BotType, event: string, error?: any) {
     error: error ? error.message : null,
   };
   
-  await redis.lpush('bots:logs', JSON.stringify(log));
+  await getRedis().lpush('bots:logs', JSON.stringify(log));
   // Keep only last 1000 logs
-  await redis.ltrim('bots:logs', 0, 999);
+  await getRedis().ltrim('bots:logs', 0, 999);
 }
 
 // Analytics functions
 export async function getBotAnalytics() {
   try {
-    const logs = await redis.lrange('bots:logs', 0, -1);
-    const configs = await redis.get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
+    const logs = await getRedis().lrange('bots:logs', 0, -1);
+    const configs = await getRedis().get<Record<BotType, BotConfig>>('bots:config') || defaultBotConfigs;
     
     return {
       logs: logs.map(log => JSON.parse(log)),
@@ -198,4 +191,16 @@ export async function getRiskMetrics() {
     console.error('Error getting risk metrics:', error);
     throw error;
   }
+}
+
+function getRedis() {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+  let redis = null;
+  if (isValidRedis) {
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+  return redis;
 } 

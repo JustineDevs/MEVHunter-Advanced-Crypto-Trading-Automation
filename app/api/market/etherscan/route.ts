@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
-import { Redis } from '@upstash/redis';
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 const CACHE_TTL = 5; // Cache for 5 seconds
 
 export async function GET() {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+  let redis = null;
+  if (isValidRedis) {
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+
   try {
     // Try to get cached data
-    const cachedData = await redis.get('etherscan:gas');
+    const cachedData = await redis?.get('etherscan:gas');
     if (cachedData) {
       return NextResponse.json(cachedData);
     }
@@ -36,7 +39,7 @@ export async function GET() {
     };
 
     // Cache the data
-    await redis.set('etherscan:gas', response, { ex: CACHE_TTL });
+    await redis?.set('etherscan:gas', response, { ex: CACHE_TTL });
 
     return NextResponse.json(response);
   } catch (error) {

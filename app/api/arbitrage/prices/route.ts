@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Redis } from "@upstash/redis";
-
-// Initialize Redis client for rate limiting only if env vars are set
-const redisUrl = process.env.UPSTASH_REDIS_URL || "";
-const redisToken = process.env.UPSTASH_REDIS_TOKEN || "";
-const hasRedis = redisUrl && redisToken;
-const redis = hasRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -18,6 +11,15 @@ const CACHE_DURATION = 15;
 const cacheKey = `arbitrage:prices:data`;
 
 export async function GET() {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+  let redis = null;
+  if (isValidRedis) {
+    const { Redis } = await import("@upstash/redis");
+    redis = new Redis({ url: redisUrl, token: redisToken });
+  }
+
   try {
     // Rate limit only if Redis is available
     if (redis) {
