@@ -80,14 +80,14 @@ export default function CryptoBotDashboard() {
 
   const renderWalletDependentContent = () => {
     if (!walletState.isConnected) {
-      return (
+  return (
         <div className="flex flex-col items-center justify-center p-12 text-center">
           <Wallet className="w-16 h-16 text-slate-400 mb-4" />
           <h2 className="text-2xl font-semibold text-white mb-2">Connect Your Wallet</h2>
           <p className="text-slate-400 mb-6">Connect your MetaMask or Phantom wallet to access the full dashboard</p>
-        </div>
+          </div>
       )
-    }
+                }
 
     return (
       <>
@@ -428,7 +428,7 @@ export default function CryptoBotDashboard() {
           <div>
             <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight drop-shadow-lg">MEVHunter</h1>
             <p className="text-lg text-cyan-200/80 font-medium">Advanced crypto trading automation & monitoring system</p>
-          </div>
+      </div>
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2 mb-2">
               {/* Notifications Button */}

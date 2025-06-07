@@ -43,7 +43,7 @@ export const WalletActivityAreaChart: React.FC<WalletActivityAreaChartProps> = (
   };
 
   useEffect(() => {
-    setLoading(true);
+      setLoading(true);
     setTimeout(() => {
       setData(generateDemoData(timeFrame));
       setLoading(false);

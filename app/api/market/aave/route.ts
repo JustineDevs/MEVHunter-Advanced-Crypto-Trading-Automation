@@ -24,9 +24,9 @@ export async function GET(request: Request) {
 
     // Try to get cached data if Redis is available
     if (redis) {
-      const cachedData = await redis.get(`aave:user:${user}`);
-      if (cachedData) {
-        return NextResponse.json(cachedData);
+    const cachedData = await redis.get(`aave:user:${user}`);
+    if (cachedData) {
+      return NextResponse.json(cachedData);
       }
     }
 
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 
     // Cache the data if Redis is available
     if (redis) {
-      await redis.set(`aave:user:${user}`, response, { ex: CACHE_TTL });
+    await redis.set(`aave:user:${user}`, response, { ex: CACHE_TTL });
     }
 
     return NextResponse.json(response);
@@ -67,4 +67,4 @@ export async function GET(request: Request) {
     console.error("Aave API error:", e);
     return NextResponse.json({ error: "Failed to fetch Aave account data" }, { status: 500 });
   }
-}
+} 

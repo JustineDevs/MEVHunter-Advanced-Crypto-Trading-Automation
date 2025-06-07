@@ -156,22 +156,22 @@ export function WalletConnection({ onConnectionChange, isConnected }: WalletConn
   const disconnect = async () => {
     try {
       setError("")
-      setWalletAddress("")
-      setWalletType(null)
-      setBalance(0)
+    setWalletAddress("")
+    setWalletType(null)
+    setBalance(0)
       setNetwork("")
-      onConnectionChange(false)
+    onConnectionChange(false)
 
-      if (window.solana && window.solana.isPhantom) {
-        try {
-          await window.solana.disconnect()
-        } catch (e) {
-          // Ignore errors if already disconnected
-        }
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        await window.solana.disconnect()
+      } catch (e) {
+        // Ignore errors if already disconnected
       }
+    }
 
       // Clear any session tokens/cookies
-      document.cookie = "session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+    document.cookie = "session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
     } catch (error: any) {
       console.error("Error disconnecting wallet:", error)
       setError(error.message || "Failed to disconnect wallet")

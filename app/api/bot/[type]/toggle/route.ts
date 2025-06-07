@@ -28,9 +28,9 @@ export async function POST(
 
     // Update bot status in Redis if available
     if (redis) {
-      await redis.set(`bot:${botType}:status`, status);
-      await redis.set(`bot:${botType}:lastUpdate`, new Date().toISOString());
-      return NextResponse.json({ success: true });
+    await redis.set(`bot:${botType}:status`, status);
+    await redis.set(`bot:${botType}:lastUpdate`, new Date().toISOString());
+    return NextResponse.json({ success: true });
     }
 
     // If Redis is not available, return a mock response
