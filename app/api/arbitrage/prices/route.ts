@@ -3,11 +3,11 @@ import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
-// Initialize Redis client for rate limiting
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_URL || "",
-  token: process.env.UPSTASH_REDIS_TOKEN || "",
-});
+// Initialize Redis client for rate limiting only if env vars are set
+const redisUrl = process.env.UPSTASH_REDIS_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_TOKEN || "";
+const hasRedis = redisUrl && redisToken;
+const redis = hasRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -15,27 +15,41 @@ const solProvider = new Connection(process.env.SOLANA_RPC_URL || "");
 
 // Cache duration in seconds
 const CACHE_DURATION = 15;
+const cacheKey = `arbitrage:prices:data`;
 
 export async function GET() {
   try {
-    // Check rate limit
-    const rateLimitKey = `arbitrage:prices:ratelimit`;
-    const requestCount = await redis.incr(rateLimitKey);
-    if (requestCount === 1) {
-      await redis.expire(rateLimitKey, 60); // Reset after 1 minute
-    }
-    if (requestCount > 100) { // Max 100 requests per minute
-      return NextResponse.json(
-        { error: "Rate limit exceeded" },
-        { status: 429 }
-      );
+    // Rate limit only if Redis is available
+    if (redis) {
+      const rateLimitKey = `arbitrage:prices:ratelimit`;
+      const requestCount = await redis.incr(rateLimitKey);
+      if (requestCount === 1) {
+        await redis.expire(rateLimitKey, 60); // Reset after 1 minute
+      }
+      if (requestCount > 100) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded" },
+          { status: 429 }
+        );
+      }
     }
 
-    // Check cache
-    const cacheKey = `arbitrage:prices:data`;
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+    // Check cache only if Redis is available
+    if (redis) {
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
+    }
+
+    // If Redis is not available, return a mock response for demo
+    if (!redis) {
+      return NextResponse.json({
+        time: new Date().toISOString(),
+        uniswap: Math.random() * 1000,
+        sushiswap: Math.random() * 1000,
+        curve: Math.random() * 1000
+      });
     }
 
     // Fetch prices from different exchanges

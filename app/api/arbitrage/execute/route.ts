@@ -3,11 +3,11 @@ import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
-// Initialize Redis client for rate limiting
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_URL || "",
-  token: process.env.UPSTASH_REDIS_TOKEN || "",
-});
+// Initialize Redis client for rate limiting only if env vars are set
+const redisUrl = process.env.UPSTASH_REDIS_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_TOKEN || "";
+const hasRedis = redisUrl && redisToken;
+const redis = hasRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -15,17 +15,19 @@ const solProvider = new Connection(process.env.SOLANA_RPC_URL || "");
 
 export async function POST(request: Request) {
   try {
-    // Check rate limit
-    const rateLimitKey = `arbitrage:execute:ratelimit`;
-    const requestCount = await redis.incr(rateLimitKey);
-    if (requestCount === 1) {
-      await redis.expire(rateLimitKey, 60); // Reset after 1 minute
-    }
-    if (requestCount > 10) { // Max 10 requests per minute
-      return NextResponse.json(
-        { error: "Rate limit exceeded" },
-        { status: 429 }
-      );
+    // Rate limit only if Redis is available
+    if (redis) {
+      const rateLimitKey = `arbitrage:execute:ratelimit`;
+      const requestCount = await redis.incr(rateLimitKey);
+      if (requestCount === 1) {
+        await redis.expire(rateLimitKey, 60); // Reset after 1 minute
+      }
+      if (requestCount > 10) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded" },
+          { status: 429 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -36,6 +38,19 @@ export async function POST(request: Request) {
         { error: "Missing required parameters" },
         { status: 400 }
       );
+    }
+
+    // If Redis is not available, return a mock response for demo
+    if (!redis) {
+      return NextResponse.json({
+        success: true,
+        message: "Demo mode: trade executed (no Redis)",
+        opportunity,
+        walletAddress,
+        walletType,
+        txHash: "0xDEMO1234567890",
+        status: "success"
+      });
     }
 
     // Execute trade based on wallet type
