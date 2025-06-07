@@ -4,9 +4,9 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
 // Initialize Redis client for rate limiting only if env vars are set and valid
-const redisUrl = process.env.UPSTASH_REDIS_URL || "";
-const redisToken = process.env.UPSTASH_REDIS_TOKEN || "";
-const isValidRedis = redisUrl.startsWith("http") && !!redisToken;
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
 const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers

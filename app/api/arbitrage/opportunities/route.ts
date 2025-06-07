@@ -4,10 +4,10 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
 // Initialize Redis client for rate limiting
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_URL || "",
-  token: process.env.UPSTASH_REDIS_TOKEN || "",
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -18,31 +18,36 @@ const CACHE_DURATION = 30;
 
 export async function GET() {
   try {
-    // Check rate limit
-    const rateLimitKey = `arbitrage:opportunities:ratelimit`;
-    const requestCount = await redis.incr(rateLimitKey);
-    if (requestCount === 1) {
-      await redis.expire(rateLimitKey, 60); // Reset after 1 minute
-    }
-    if (requestCount > 50) { // Max 50 requests per minute
-      return NextResponse.json(
-        { error: "Rate limit exceeded" },
-        { status: 429 }
-      );
-    }
+    // Check rate limit only if Redis is available
+    if (redis) {
+      const rateLimitKey = `arbitrage:opportunities:ratelimit`;
+      const requestCount = await redis.incr(rateLimitKey);
+      if (requestCount === 1) {
+        await redis.expire(rateLimitKey, 60); // Reset after 1 minute
+      }
+      if (requestCount > 50) { // Max 50 requests per minute
+        return NextResponse.json(
+          { error: "Rate limit exceeded" },
+          { status: 429 }
+        );
+      }
 
-    // Check cache
-    const cacheKey = `arbitrage:opportunities:data`;
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+      // Check cache
+      const cacheKey = `arbitrage:opportunities:data`;
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
     }
 
     // Fetch opportunities
     const opportunities = await findArbitrageOpportunities();
 
-    // Cache the data
-    await redis.set(cacheKey, opportunities, { ex: CACHE_DURATION });
+    // Cache the data if Redis is available
+    if (redis) {
+      const cacheKey = `arbitrage:opportunities:data`;
+      await redis.set(cacheKey, opportunities, { ex: CACHE_DURATION });
+    }
 
     return NextResponse.json(opportunities);
   } catch (error) {

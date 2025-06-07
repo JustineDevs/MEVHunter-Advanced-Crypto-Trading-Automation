@@ -4,10 +4,10 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
 // Initialize Redis client for rate limiting
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_URL || "",
-  token: process.env.UPSTASH_REDIS_TOKEN || "",
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
@@ -18,31 +18,36 @@ const CACHE_DURATION = 60;
 
 export async function GET() {
   try {
-    // Check rate limit
-    const rateLimitKey = `arbitrage:volume:ratelimit`;
-    const requestCount = await redis.incr(rateLimitKey);
-    if (requestCount === 1) {
-      await redis.expire(rateLimitKey, 60); // Reset after 1 minute
-    }
-    if (requestCount > 30) { // Max 30 requests per minute
-      return NextResponse.json(
-        { error: "Rate limit exceeded" },
-        { status: 429 }
-      );
-    }
+    // Check rate limit only if Redis is available
+    if (redis) {
+      const rateLimitKey = `arbitrage:volume:ratelimit`;
+      const requestCount = await redis.incr(rateLimitKey);
+      if (requestCount === 1) {
+        await redis.expire(rateLimitKey, 60); // Reset after 1 minute
+      }
+      if (requestCount > 30) { // Max 30 requests per minute
+        return NextResponse.json(
+          { error: "Rate limit exceeded" },
+          { status: 429 }
+        );
+      }
 
-    // Check cache
-    const cacheKey = `arbitrage:volume:data`;
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+      // Check cache
+      const cacheKey = `arbitrage:volume:data`;
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
     }
 
     // Fetch volume data
     const volumeData = await fetchVolumeData();
 
-    // Cache the data
-    await redis.set(cacheKey, volumeData, { ex: CACHE_DURATION });
+    // Cache the data if Redis is available
+    if (redis) {
+      const cacheKey = `arbitrage:volume:data`;
+      await redis.set(cacheKey, volumeData, { ex: CACHE_DURATION });
+    }
 
     return NextResponse.json(volumeData);
   } catch (error) {
