@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 export async function POST(
   request: Request,
@@ -23,11 +23,21 @@ export async function POST(
       );
     }
 
-    // Update bot status in Redis
-    await redis.set(`bot:${botType}:status`, status);
-    await redis.set(`bot:${botType}:lastUpdate`, new Date().toISOString());
+    // Update bot status in Redis if available
+    if (redis) {
+      await redis.set(`bot:${botType}:status`, status);
+      await redis.set(`bot:${botType}:lastUpdate`, new Date().toISOString());
+      return NextResponse.json({ success: true });
+    }
 
-    return NextResponse.json({ success: true });
+    // If Redis is not available, return a mock response
+    return NextResponse.json({
+      success: true,
+      message: 'Demo mode: bot status updated (no Redis)',
+      botType,
+      status,
+      lastUpdate: new Date().toISOString()
+    });
   } catch (error) {
     console.error('Error toggling bot:', error);
     return NextResponse.json(

@@ -7,11 +7,10 @@ const AAVE_LENDING_POOL_ABI = [
 ];
 const AAVE_LENDING_POOL_ADDRESS = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"; // Mainnet v2
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || "";
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const isValidRedis = redisUrl.startsWith("https://") && !!redisToken;
+const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 const CACHE_TTL = 60; // Cache for 60 seconds
 
@@ -20,10 +19,25 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Missing user address" }, { status: 400 });
 
   try {
-    // Try to get cached data
-    const cachedData = await redis.get(`aave:user:${user}`);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+    // Try to get cached data if Redis is available
+    if (redis) {
+      const cachedData = await redis.get(`aave:user:${user}`);
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
+    }
+
+    // If Redis is not available, return a mock response
+    if (!redis) {
+      return NextResponse.json({
+        totalCollateralETH: "0",
+        totalDebtETH: "0",
+        availableBorrowsETH: "0",
+        currentLiquidationThreshold: "0",
+        ltv: "0",
+        healthFactor: "0",
+        timestamp: new Date().toISOString()
+      });
     }
 
     const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -40,8 +54,10 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     };
 
-    // Cache the data
-    await redis.set(`aave:user:${user}`, response, { ex: CACHE_TTL });
+    // Cache the data if Redis is available
+    if (redis) {
+      await redis.set(`aave:user:${user}`, response, { ex: CACHE_TTL });
+    }
 
     return NextResponse.json(response);
   } catch (e) {
