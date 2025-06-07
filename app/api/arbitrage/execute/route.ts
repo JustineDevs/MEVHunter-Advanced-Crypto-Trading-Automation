@@ -3,11 +3,11 @@ import { ethers } from "ethers";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Redis } from "@upstash/redis";
 
-// Initialize Redis client for rate limiting only if env vars are set
+// Initialize Redis client for rate limiting only if env vars are set and valid
 const redisUrl = process.env.UPSTASH_REDIS_URL || "";
 const redisToken = process.env.UPSTASH_REDIS_TOKEN || "";
-const hasRedis = redisUrl && redisToken;
-const redis = hasRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
+const isValidRedis = redisUrl.startsWith("http") && !!redisToken;
+const redis = isValidRedis ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Initialize providers
 const ethProvider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
