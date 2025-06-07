@@ -38,7 +38,7 @@ const BOT_USER_AGENTS = [
 ]
 
 // List of allowed countries (ISO codes)
-const ALLOWED_COUNTRIES = ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP', 'SG', 'KR', 'NL']
+const ALLOWED_COUNTRIES = ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP', 'SG', 'KR', 'NL', 'PH']
 
 // List of protected API routes that require authentication
 const PROTECTED_ROUTES = [
@@ -132,17 +132,17 @@ export async function middleware(request: ExtendedNextRequest) {
   }
 
   // Geo-blocking with improved logging
-  const country = request.geo?.country
-  if (country && !ALLOWED_COUNTRIES.includes(country)) {
-    console.log(`Blocked access from ${country} (${request.geo?.city}, ${request.geo?.region})`)
-    return new NextResponse('Access denied', { 
-      status: 403,
-      headers: {
-        'Content-Type': 'text/plain',
-        'X-Blocked-Country': country
-      }
-    })
-  }
+  // const country = request.geo?.country
+  // if (country && !ALLOWED_COUNTRIES.includes(country)) {
+  //   console.log(`Blocked access from ${country} (${request.geo?.city}, ${request.geo?.region})`)
+  //   return new NextResponse('Access denied', { 
+  //     status: 403,
+  //     headers: {
+  //       'Content-Type': 'text/plain',
+  //       'X-Blocked-Country': country
+  //     }
+  //   })
+  // }
 
   // Enhanced CSRF Protection for protected routes
   if (PROTECTED_ROUTES.some(route => request.nextUrl.pathname.startsWith(route))) {
