@@ -31,6 +31,27 @@ MEVHunter is an advanced crypto trading automation platform designed for real-ti
 | Offline Support | Service Worker enables offline functionality and caching |
 | Push Notifications | Real-time alerts for price changes, gas fees, and protocol events |
 
+## Latest Updates (2025)
+
+- **Explorer Tab & Widgets:**
+  - Transaction History: Filterable, sortable table of demo transactions (win/lose/pending).
+  - Transaction Status Chart: Pie chart for quick win/lose/pending insights.
+  - Address/Domain Lookup: Searchable input for demo addresses/domains.
+  - Profit/Loss Tracker: Bar chart summarizing outcomes by day.
+  - Pending Transaction Monitor: Real-time updating list of pending transactions.
+- **Interactive Dashboard:**
+  - Time frame selector (5m, 1h, 1d, 7d, 30d) for the main chart.
+  - Stat cards (Active Strategies, Total P&L, Risk Level, Gas Saved) update in real time with animated demo data.
+- **Notifications & Social Links:**
+  - Notifications bell with alert badge in the header.
+  - Social media buttons (GitHub, LinkedIn, Twitter, Gmail, Telegram, Website) in the header.
+  - Footer with "Built by JustineDevs" and a "Work with me" label.
+- **Navigation:**
+  - All 8 tabs (Dashboard, Arbitrage, Liquidation, Gas Optimizer, NFT Monitor, Trading, Security, Explorer) in a single row, grid layout, with custom icons.
+- **UI/UX:**
+  - All widgets and charts use Tailwind CSS, Radix UI, recharts, react-hook-form, and zod for validation.
+  - No changes to existing design—new features are additive and fully integrated.
+
 ## Planned Features
 
 The following features are planned to enhance MEVHunter's functionality:
