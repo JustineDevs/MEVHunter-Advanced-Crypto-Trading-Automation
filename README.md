@@ -12,6 +12,7 @@
 To empower crypto traders with cutting-edge automation tools for real-time DeFi monitoring, arbitrage detection, and secure wallet integration, making advanced trading accessible to all.
 
 ### Vision
+
 To build a robust, secure, and scalable platform that redefines crypto trading automation by leveraging blockchain technology, modern web frameworks, and a user-centric design.
 
 ## Overview
@@ -274,6 +275,14 @@ The `UI Design` folder contains design mockups and assets for the MEVHunter plat
 ### UI Design Gallery
 
 Below are the latest UI design mockups for MEVHunter:
+![dashboard](https://github.com/user-attachments/assets/bc9fdb07-c3fa-436e-b717-0d523e8354ac)
+![arbitrage](https://github.com/user-attachments/assets/6ceedc31-c728-40dd-88f1-6e9b531cc24e)
+![liquidation](https://github.com/user-attachments/assets/2e54c7b5-e666-4034-9586-3bd79b6d4e69)
+![gas-optimization](https://github.com/user-attachments/assets/2563df6c-b1f8-47d3-a9cf-72cfd77d3f98)
+![nft-monitor](https://github.com/user-attachments/assets/69cee863-0ef1-4921-b3cd-545afd946353)
+![trading](https://github.com/user-attachments/assets/edd5e65e-e7a8-427c-a36c-14ec1922e917)
+![security](https://github.com/user-attachments/assets/95c3f958-0d11-4fd5-a05b-611adf64d88c)
+![explorer](https://github.com/user-attachments/assets/e9f05a00-a126-47a3-8cb3-f3d3b533e994)
 
 | Dashboard | Arbitrage | Liquidation |
 |-----------|-----------|------------|
