@@ -28,7 +28,12 @@ interface ContractAudit {
   status: "safe" | "warning" | "danger"
 }
 
-export function SecurityAudit() {
+interface SecurityAuditProps {
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
+}
+
+export function SecurityAudit({ walletAddress, walletType }: SecurityAuditProps) {
   const [securityIssues, setSecurityIssues] = useState<SecurityIssue[]>([
     {
       id: "1",

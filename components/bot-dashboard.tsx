@@ -7,13 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Play, Pause, Settings, Activity, TrendingUp, AlertTriangle } from "lucide-react"
-import { TradingViewWidget } from "@/components/TradingViewWidget"
 import { MarketGasCard } from "@/components/ui/market-gas-card"
 import { MarketUniswapCard } from "@/components/ui/market-uniswap-card"
 import { MarketAaveCard } from "@/components/ui/market-aave-card"
 
 interface BotDashboardProps {
-  isConnected: boolean
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
 }
 
 interface BotStrategy {
@@ -26,7 +26,7 @@ interface BotStrategy {
   riskLevel: "low" | "medium" | "high"
 }
 
-export function BotDashboard({ isConnected }: BotDashboardProps) {
+export function BotDashboard({ walletAddress, walletType }: BotDashboardProps) {
   const [strategies, setStrategies] = useState<BotStrategy[]>([
     {
       id: "1",
@@ -102,21 +102,11 @@ export function BotDashboard({ isConnected }: BotDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Live Chart Card */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white">Live Market Chart</CardTitle>
-          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
-        </CardContent>
-      </Card>
       {/* Market Data Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MarketGasCard />
         <MarketUniswapCard />
-        <MarketAaveCard />
+        <MarketAaveCard walletAddress={walletAddress} walletType={walletType} />
       </div>
       {/* Strategy Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -135,7 +125,7 @@ export function BotDashboard({ isConnected }: BotDashboardProps) {
                   <Switch
                     checked={strategy.status === "active"}
                     onCheckedChange={() => toggleStrategy(strategy.id)}
-                    disabled={!isConnected}
+                    disabled={!walletType}
                   />
                 </div>
               </div>
@@ -179,40 +169,6 @@ export function BotDashboard({ isConnected }: BotDashboardProps) {
           </Card>
         ))}
       </div>
-
-      {/* Quick Actions */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white">Quick Actions</CardTitle>
-          <CardDescription className="text-slate-400">
-            Manage your trading strategies and monitoring systems
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 h-20 flex-col" disabled={!isConnected}>
-              <Play className="w-6 h-6 mb-2" />
-              Start All Bots
-            </Button>
-            <Button
-              variant="outline"
-              className="border-slate-600 text-slate-300 hover:bg-slate-700 h-20 flex-col"
-              disabled={!isConnected}
-            >
-              <Pause className="w-6 h-6 mb-2" />
-              Pause All
-            </Button>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 h-20 flex-col">
-              <TrendingUp className="w-6 h-6 mb-2" />
-              Analytics
-            </Button>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 h-20 flex-col">
-              <AlertTriangle className="w-6 h-6 mb-2" />
-              Risk Monitor
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

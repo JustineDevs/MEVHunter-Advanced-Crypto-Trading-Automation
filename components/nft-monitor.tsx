@@ -29,7 +29,12 @@ interface NFTAlert {
   timestamp: Date
 }
 
-export function NFTMonitor() {
+interface NFTMonitorProps {
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
+}
+
+export function NFTMonitor({ walletAddress, walletType }: NFTMonitorProps) {
   const [collections, setCollections] = useState<NFTCollection[]>([
     {
       id: "1",

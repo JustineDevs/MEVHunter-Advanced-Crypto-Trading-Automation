@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ethers } from "ethers";
+import { Redis } from '@upstash/redis';
 
 const UNISWAP_V3_POOL_ABI = [
   "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
@@ -8,30 +9,52 @@ const UNISWAP_V3_POOL_ABI = [
   "function token1() view returns (address)"
 ];
 
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const CACHE_TTL = 60; // Cache for 60 seconds
+
 export async function GET(request: Request) {
   const pool = new URL(request.url).searchParams.get("pool");
   if (!pool) return NextResponse.json({ error: "Missing pool address" }, { status: 400 });
 
-  const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
-  const contract = new ethers.Contract(pool, UNISWAP_V3_POOL_ABI, provider);
-
   try {
+    // Try to get cached data
+    const cachedData = await redis.get(`uniswap:pool:${pool}`);
+    if (cachedData) {
+      return NextResponse.json(cachedData);
+    }
+
+    const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
+    const contract = new ethers.Contract(pool, UNISWAP_V3_POOL_ABI, provider);
+
     const [slot0, liquidity, token0, token1] = await Promise.all([
       contract.slot0(),
       contract.liquidity(),
       contract.token0(),
       contract.token1()
     ]);
+
     // Convert all BigInt values in slot0 to strings
     const slot0Obj = Object.fromEntries(
       Object.entries(slot0).map(([k, v]) => [k, typeof v === 'bigint' ? v.toString() : v])
     );
-    return NextResponse.json({
+
+    const data = {
       slot0: slot0Obj,
       liquidity: liquidity.toString(),
       token0,
-      token1
-    });
+      token1,
+      timestamp: new Date().toISOString()
+    };
+
+    // Cache the data
+    await redis.set(`uniswap:pool:${pool}`, data, { ex: CACHE_TTL });
+
+    return NextResponse.json(data);
   } catch (e) {
     console.error("Uniswap API error:", e);
     return NextResponse.json({ error: "Failed to fetch Uniswap pool data" }, { status: 500 });

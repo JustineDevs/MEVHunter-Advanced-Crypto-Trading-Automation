@@ -3,13 +3,18 @@ import type { NextRequest } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
+// Define the geo type
+type GeoInfo = {
+  country?: string;
+  city?: string;
+  region?: string;
+};
+
 // Extend NextRequest type to include ip and geo
-interface ExtendedNextRequest extends NextRequest {
+type ExtendedNextRequest = NextRequest & {
   ip?: string;
-  geo?: {
-    country?: string;
+  geo: GeoInfo;
   };
-}
 
 // Initialize rate limiter only if Redis credentials are available
 let ratelimit: Ratelimit | null = null;
@@ -20,8 +25,9 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     }),
-    limiter: Ratelimit.slidingWindow(10, '10 s'),
+    limiter: Ratelimit.slidingWindow(20, '10 s'), // Increased limit for better UX
     analytics: true,
+    prefix: 'ratelimit:mevhunter', // Added prefix for better organization
   });
 }
 
@@ -42,10 +48,22 @@ const BOT_USER_AGENTS = [
   'ruby',
   'perl',
   'php',
+  'go-http-client',
+  'node-fetch',
+  'axios',
+  'postman',
 ]
 
 // List of allowed countries (ISO codes)
-const ALLOWED_COUNTRIES = ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP', 'SG']
+const ALLOWED_COUNTRIES = ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'JP', 'SG', 'KR', 'NL']
+
+// List of protected API routes that require authentication
+const PROTECTED_ROUTES = [
+  '/api/wallet',
+  '/api/transactions',
+  '/api/balance',
+  '/api/trading',
+]
 
 export async function middleware(request: ExtendedNextRequest) {
   const response = NextResponse.next()
@@ -57,15 +75,40 @@ export async function middleware(request: ExtendedNextRequest) {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+  )
+  response.headers.set('Content-Security-Policy', `
+    default-src 'self';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' https://*.alchemyapi.io https://*.infura.io https://*.upstash.io wss://*.alchemyapi.io;
+    frame-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+  `.replace(/\s+/g, ' ').trim())
 
-  // Bot detection
+  // Bot detection with improved accuracy
   const userAgent = request.headers.get('user-agent')?.toLowerCase() || ''
-  if (BOT_USER_AGENTS.some(bot => userAgent.includes(bot))) {
-    return new NextResponse('Bot access denied', { status: 403 })
+  const isBot = BOT_USER_AGENTS.some(bot => userAgent.includes(bot)) ||
+    !userAgent || // Empty user agent
+    userAgent.includes('mozilla') === false // Not a browser
+
+  if (isBot) {
+    return new NextResponse('Access denied', { 
+      status: 403,
+      headers: {
+        'Content-Type': 'text/plain',
+        'X-Bot-Detected': 'true'
+      }
+    })
   }
 
-  // Rate limiting (only if Redis is configured)
+  // Rate limiting with improved error handling
   if (ratelimit) {
     try {
       const ip = request.ip ?? '127.0.0.1'
@@ -76,7 +119,13 @@ export async function middleware(request: ExtendedNextRequest) {
       response.headers.set('X-RateLimit-Reset', reset.toString())
 
       if (!success) {
-        return new NextResponse('Too Many Requests', { status: 429 })
+        return new NextResponse('Too Many Requests', { 
+          status: 429,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString()
+          }
+        })
       }
     } catch (error) {
       console.error('Rate limiting error:', error)
@@ -84,20 +133,42 @@ export async function middleware(request: ExtendedNextRequest) {
     }
   }
 
-  // Geo-blocking
+  // Geo-blocking with improved logging
   const country = request.geo?.country
   if (country && !ALLOWED_COUNTRIES.includes(country)) {
-    return new NextResponse('Access denied', { status: 403 })
+    console.log(`Blocked access from ${country} (${request.geo?.city}, ${request.geo?.region})`)
+    return new NextResponse('Access denied', { 
+      status: 403,
+      headers: {
+        'Content-Type': 'text/plain',
+        'X-Blocked-Country': country
+      }
+    })
   }
 
-  // CSRF Protection
+  // Enhanced CSRF Protection for protected routes
+  if (PROTECTED_ROUTES.some(route => request.nextUrl.pathname.startsWith(route))) {
   if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
     const csrfToken = request.headers.get('X-CSRF-Token')
     const sessionToken = request.cookies.get('session-token')?.value
 
     if (!csrfToken || !sessionToken || csrfToken !== sessionToken) {
-      return new NextResponse('Invalid CSRF token', { status: 403 })
+        return new NextResponse('Invalid CSRF token', { 
+          status: 403,
+          headers: {
+            'Content-Type': 'text/plain',
+            'X-CSRF-Required': 'true'
+          }
+        })
     }
+    }
+  }
+
+  // Add CORS headers for API routes
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token')
   }
 
   return response
@@ -111,7 +182,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - public files
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 } 

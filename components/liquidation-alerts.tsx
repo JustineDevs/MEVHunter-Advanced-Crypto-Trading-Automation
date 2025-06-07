@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { AlertTriangle, DollarSign, Clock, Target } from "lucide-react"
-import { TradingViewWidget } from "@/components/TradingViewWidget"
+import { AlertTriangle, DollarSign, Clock, Target, Play, Pause, CheckCircle2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface LiquidationAlert {
   id: string
@@ -19,61 +19,94 @@ interface LiquidationAlert {
   potentialProfit: number
   timeToLiquidation: string
   riskLevel: "low" | "medium" | "high"
+  status?: "pending" | "executed" | "failed"
 }
 
-export function LiquidationAlerts() {
-  const [alerts, setAlerts] = useState<LiquidationAlert[]>([
-    {
-      id: "1",
-      protocol: "Aave V3",
-      user: "0x1234...5678",
-      collateral: "15.5 ETH",
-      debt: "25,000 USDC",
-      healthFactor: 1.05,
-      liquidationThreshold: 1.0,
-      potentialProfit: 156.78,
-      timeToLiquidation: "2h 15m",
-      riskLevel: "high",
-    },
-    {
-      id: "2",
-      protocol: "Compound",
-      user: "0xabcd...efgh",
-      collateral: "50 WBTC",
-      debt: "800,000 DAI",
-      healthFactor: 1.12,
-      liquidationThreshold: 1.0,
-      potentialProfit: 2340.56,
-      timeToLiquidation: "4h 32m",
-      riskLevel: "medium",
-    },
-  ])
+interface LiquidationAlertsProps {
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
+}
 
-  const [totalAlerts, setTotalAlerts] = useState(alerts.length)
+// Demo data generator
+const generateDemoAlerts = (): LiquidationAlert[] => {
+  const protocols = ["Aave", "Compound", "Maker", "Liquity"]
+  const riskLevels: ("low" | "medium" | "high")[] = ["low", "medium", "high"]
+  
+  return Array.from({ length: 5 }, (_, i) => ({
+    id: `alert-${i + 1}`,
+    protocol: protocols[Math.floor(Math.random() * protocols.length)],
+    user: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 6)}`,
+    collateral: `${(Math.random() * 10).toFixed(2)} ETH`,
+    debt: `$${(Math.random() * 15000).toFixed(2)}`,
+    healthFactor: 1 + Math.random() * 0.5,
+    liquidationThreshold: 1.5,
+    potentialProfit: Math.random() * 1000,
+    timeToLiquidation: `${Math.floor(Math.random() * 24)}h ${Math.floor(Math.random() * 60)}m`,
+    riskLevel: riskLevels[Math.floor(Math.random() * riskLevels.length)],
+    status: "pending" as const
+  }))
+}
+
+export function LiquidationAlerts({ walletAddress, walletType }: LiquidationAlertsProps) {
+  const [alerts, setAlerts] = useState<LiquidationAlert[]>([])
+  const [executedPositions, setExecutedPositions] = useState<LiquidationAlert[]>([])
+  const [totalAlerts, setTotalAlerts] = useState(0)
   const [highRiskCount, setHighRiskCount] = useState(0)
   const [totalPotentialProfit, setTotalPotentialProfit] = useState(0)
+  const [isScanning, setIsScanning] = useState(true)
 
+  // Initialize demo data
   useEffect(() => {
-    const highRisk = alerts.filter((alert) => alert.riskLevel === "high").length
-    const totalProfit = alerts.reduce((sum, alert) => sum + alert.potentialProfit, 0)
+    const demoAlerts = generateDemoAlerts()
+    setAlerts(demoAlerts)
+    updateStats(demoAlerts)
+  }, [])
+
+  // Update demo data periodically when scanning
+  useEffect(() => {
+    if (!isScanning) return
+
+    const interval = setInterval(() => {
+      const demoAlerts = generateDemoAlerts()
+      setAlerts(demoAlerts)
+      updateStats(demoAlerts)
+    }, 10000) // Update every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [isScanning])
+
+  const updateStats = (currentAlerts: LiquidationAlert[]) => {
+    const highRisk = currentAlerts.filter((alert) => alert.riskLevel === "high").length
+    const totalProfit = currentAlerts.reduce((sum, alert) => sum + alert.potentialProfit, 0)
 
     setHighRiskCount(highRisk)
+    setTotalAlerts(currentAlerts.length)
     setTotalPotentialProfit(totalProfit)
-  }, [alerts])
+  }
+
+  const toggleScanning = () => {
+    setIsScanning(!isScanning)
+    toast.info(isScanning ? "Liquidation scanning paused" : "Liquidation scanning resumed")
+  }
 
   const executeLiquidation = async (alert: LiquidationAlert) => {
     try {
-      const response = await fetch("/api/liquidation/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alertId: alert.id }),
-      })
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Update alert status
+      const updatedAlerts = alerts.map(a => 
+        a.id === alert.id ? { ...a, status: "executed" } : a
+      )
+      setAlerts(updatedAlerts)
 
-      if (response.ok) {
-        console.log("Liquidation executed successfully")
-      }
+      // Move to executed positions
+      setExecutedPositions(prev => [...prev, { ...alert, status: "executed" }])
+      
+      toast.success("Liquidation executed successfully")
     } catch (error) {
       console.error("Failed to execute liquidation:", error)
+      toast.error("Failed to execute liquidation")
     }
   }
 
@@ -98,16 +131,6 @@ export function LiquidationAlerts() {
 
   return (
     <div className="space-y-6">
-      {/* Live Chart Card */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white">Live Market Chart</CardTitle>
-          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
-        </CardContent>
-      </Card>
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-slate-800/50 border-slate-700">
@@ -145,12 +168,30 @@ export function LiquidationAlerts() {
 
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-200">Avg Time</CardTitle>
-            <Clock className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-sm font-medium text-slate-200">Scanner Status</CardTitle>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-slate-400">
+                {isScanning ? "Active" : "Paused"}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={toggleScanning}
+                className="h-8 w-8 p-0"
+              >
+                {isScanning ? (
+                  <Pause className="h-4 w-4 text-yellow-400" />
+                ) : (
+                  <Play className="h-4 w-4 text-green-400" />
+                )}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-400">3h 24m</div>
-            <p className="text-xs text-slate-400">Until liquidation</p>
+            <div className="text-2xl font-bold text-blue-400">
+              {isScanning ? "Scanning..." : "Paused"}
+            </div>
+            <p className="text-xs text-slate-400">Real-time monitoring</p>
           </CardContent>
         </Card>
       </div>
@@ -201,7 +242,7 @@ export function LiquidationAlerts() {
                       size="sm"
                       onClick={() => executeLiquidation(alert)}
                       className="bg-red-600 hover:bg-red-700"
-                      disabled={alert.healthFactor > 1.2}
+                      disabled={alert.healthFactor > 1.2 || !isScanning || !walletAddress}
                     >
                       Liquidate
                     </Button>
@@ -212,6 +253,50 @@ export function LiquidationAlerts() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Executed Positions */}
+      {executedPositions.length > 0 && (
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white">Executed Positions</CardTitle>
+            <CardDescription className="text-slate-400">Successfully liquidated positions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-700">
+                  <TableHead className="text-slate-300">Protocol</TableHead>
+                  <TableHead className="text-slate-300">User</TableHead>
+                  <TableHead className="text-slate-300">Position</TableHead>
+                  <TableHead className="text-slate-300">Profit</TableHead>
+                  <TableHead className="text-slate-300">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {executedPositions.map((position) => (
+                  <TableRow key={position.id} className="border-slate-700">
+                    <TableCell className="text-white font-medium">{position.protocol}</TableCell>
+                    <TableCell className="text-slate-300 font-mono text-sm">{position.user}</TableCell>
+                    <TableCell>
+                      <div className="text-slate-300">
+                        <div className="text-sm">{position.collateral}</div>
+                        <div className="text-xs text-slate-400">Debt: {position.debt}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-green-400 font-medium">${position.potentialProfit.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge className="bg-green-900/50 text-green-400">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Executed
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

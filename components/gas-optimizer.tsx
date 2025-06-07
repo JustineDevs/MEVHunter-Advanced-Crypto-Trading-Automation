@@ -16,7 +16,12 @@ interface GasData {
   timestamp: Date
 }
 
-export function GasOptimizer() {
+interface GasOptimizerProps {
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
+}
+
+export function GasOptimizer({ walletAddress, walletType }: GasOptimizerProps) {
   const [gasData, setGasData] = useState<GasData>({
     slow: 12,
     standard: 18,

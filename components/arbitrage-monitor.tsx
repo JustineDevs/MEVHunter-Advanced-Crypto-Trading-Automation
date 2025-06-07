@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowRight, TrendingUp, RefreshCw, Zap } from "lucide-react"
-import { TradingViewWidget } from "@/components/TradingViewWidget"
 
 interface ArbitrageOpportunity {
   id: string
@@ -22,37 +21,14 @@ interface ArbitrageOpportunity {
   timestamp: Date
 }
 
-export function ArbitrageMonitor() {
-  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([
-    {
-      id: "1",
-      tokenPair: "ETH/USDC",
-      exchange1: "Uniswap V3",
-      exchange2: "SushiSwap",
-      price1: 2456.78,
-      price2: 2461.23,
-      spread: 0.18,
-      profitEstimate: 45.67,
-      gasEstimate: 0.012,
-      confidence: 87,
-      timestamp: new Date(),
-    },
-    {
-      id: "2",
-      tokenPair: "WBTC/ETH",
-      exchange1: "Curve",
-      exchange2: "Balancer",
-      price1: 15.234,
-      price2: 15.198,
-      spread: -0.24,
-      profitEstimate: 23.45,
-      gasEstimate: 0.018,
-      confidence: 92,
-      timestamp: new Date(),
-    },
-  ])
+interface ArbitrageMonitorProps {
+  walletAddress: string
+  walletType: "metamask" | "phantom" | null
+}
 
-  const [isScanning, setIsScanning] = useState(true)
+export function ArbitrageMonitor({ walletAddress, walletType }: ArbitrageMonitorProps) {
+  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([])
+  const [isScanning, setIsScanning] = useState(false)
   const [totalOpportunities, setTotalOpportunities] = useState(0)
   const [avgProfit, setAvgProfit] = useState(0)
 
@@ -101,16 +77,6 @@ export function ArbitrageMonitor() {
 
   return (
     <div className="space-y-6">
-      {/* Live Chart Card */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white">Live Market Chart</CardTitle>
-          <CardDescription className="text-slate-400">Real-time TradingView chart for selected symbol</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TradingViewWidget symbol="BINANCE:BTCUSDT" interval="1" />
-        </CardContent>
-      </Card>
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-slate-800/50 border-slate-700">
