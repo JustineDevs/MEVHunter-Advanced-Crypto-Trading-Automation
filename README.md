@@ -134,6 +134,8 @@ MEVHunter-Advanced-Crypto-Trading-Automation/
 | ethers | ^6.7.0 | Ethereum blockchain interactions |
 | @solana/web3.js | ^1.87.0 | Solana blockchain interactions |
 | @metamask/detect-provider | ^2.0.0 | MetaMask wallet detection |
+| @upstash/redis | ^1.28.4 | Upstash Redis client for rate limiting and caching |
+| @upstash/ratelimit | ^1.0.1 | Upstash Ratelimit for distributed rate limiting |
 
 ### Forms & Validation
 
@@ -242,6 +244,48 @@ For questions, bug reports, or feature requests, please open an issue in this re
 ## License
 
 This project is licensed under the MIT License.
+
+## Troubleshooting
+
+### Vercel Build Error: Endpoint URL must start with `http:` or `https:`
+If you see this error during Vercel build, it means the Upstash Redis client is being initialized at build time without valid environment variables. To fix:
+- Move the Redis initialization inside your API handler function.
+- Use dynamic import for `@upstash/redis` only if the environment variables are valid.
+
+Example:
+```ts
+let redis = null;
+if (isValidRedis) {
+  const { Redis } = await import("@upstash/redis");
+  redis = new Redis({ url: redisUrl, token: redisToken });
+}
+```
+
+### Installing Missing Dependencies
+If you see errors like `Module not found: Can't resolve '@upstash/ratelimit'`, install the missing packages:
+```sh
+pnpm add @upstash/ratelimit @upstash/redis
+```
+
+## UI Design
+
+The `UI Design` folder contains design mockups and assets for the MEVHunter platform. To view these designs in the app, visit the `/ui-design` page (to be implemented) or open the images directly from the `UI Design` directory.
+
+### UI Design Gallery
+
+Below are the latest UI design mockups for MEVHunter:
+
+| Dashboard | Arbitrage | Liquidation |
+|-----------|-----------|------------|
+| ![Dashboard](/ui-design/Dashboard.png) | ![Arbitrage](/ui-design/Arbitrage.png) | ![Liquidation](/ui-design/Liquidation.png) |
+
+| Gas Optimization | NFT Monitor | Trading |
+|------------------|------------|---------|
+| ![Gas Optimization](/ui-design/Gas%20Optimization.png) | ![NFT Monitor](/ui-design/NFT%20Monitor.png) | ![Trading](/ui-design/Trading.png) |
+
+| Security | Explorer |
+|----------|----------|
+| ![Security](/ui-design/Security.png) | ![Explorer](/ui-design/Explorer.png) |
 
 ---
 
